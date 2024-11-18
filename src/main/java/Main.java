@@ -61,6 +61,11 @@ class ClientHandler implements Runnable {
         } else {
           output.write(":ERR - No such command\r\n".getBytes());
         }
+        if (message.contains("ECHO")) {
+          String echoMessage = message.substring(5, message.length() - 2);
+          output.write(("+" + echoMessage + "\r\n").getBytes());
+        }
+        output.flush();
       }
     } catch (IOException e) {
       e.printStackTrace();
