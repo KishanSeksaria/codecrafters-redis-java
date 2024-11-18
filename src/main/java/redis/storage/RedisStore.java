@@ -26,6 +26,21 @@ public class RedisStore {
     return "OK";
   }
 
+  public String set(String key, String value, long px) {
+    store.put(key, value);
+    if (px > 0) {
+      new Thread(() -> {
+        try {
+          Thread.sleep(px);
+          store.remove(key);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }).start();
+    }
+    return "OK";
+  }
+
   public String get(String key) {
     return store.get(key);
   }

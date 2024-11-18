@@ -29,16 +29,13 @@ public class ClientHandler implements Runnable {
       while ((bytesRead = input.read(buffer)) != -1) {
         try {
           String message = new String(buffer, 0, bytesRead);
-          System.out.println("Received: " + message);
 
           // Parse command and get handler
           Command command = parser.parseCommand(message);
           String[] args = parser.parse(message);
-          System.out.println("Command: " + command + ", Args: " + String.join(", ", args));
 
           // Execute command and get response
           RedisResponse response = command.execute(args);
-          System.out.println("Response: " + response);
 
           // Write formatted response
           output.write(response.toString().getBytes());
