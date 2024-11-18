@@ -12,7 +12,7 @@ public class RedisParser {
 
     // Simple space-based parsing for now
     // Can be extended to support full RESP protocol
-    return input.trim().split("\r\n");
+    return input.trim().split(CRLF);
   }
 
   public Command parseCommand(String input) {
