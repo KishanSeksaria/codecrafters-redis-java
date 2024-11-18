@@ -6,7 +6,8 @@ public class RedisResponse {
     INTEGER(":%s\r\n"),
     ERROR("-%s\r\n"),
     SIMPLE_STRING("+%s\r\n"),
-    BULK_STRING("$%d\r\n%s\r\n");
+    BULK_STRING("$%d\r\n%s\r\n"),
+    ARRAY("*%d\r\n%s");
 
     private final String format;
 
@@ -21,6 +22,10 @@ public class RedisResponse {
         String str = value.toString();
         return String.format(format, str.length(), str);
       }
+      if (this == ARRAY) {
+        String[] array = (String[]) value;
+        return String.format(format, array.length, String.join("", array));
+      }
       return String.format(format, value);
     }
   }
@@ -31,8 +36,20 @@ public class RedisResponse {
     this.value = value;
   }
 
+  public RedisResponse(Object[] array) {
+    this.value = array;
+  }
+
   @Override
   public String toString() {
+    if (value instanceof Object[]) {
+      Object[] array = (Object[]) value;
+      String[] elements = new String[array.length];
+      for (int i = 0; i < array.length; i++) {
+        elements[i] = RedisResponseType.BULK_STRING.format(array[i]);
+      }
+      return RedisResponseType.ARRAY.format(elements);
+    }
     if (value == null) {
       return RedisResponseType.NULL.format(null);
     }

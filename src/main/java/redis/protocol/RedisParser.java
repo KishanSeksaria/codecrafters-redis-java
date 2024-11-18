@@ -24,7 +24,11 @@ public class RedisParser {
     }
 
     String commandName = parts[2].toLowerCase();
-    System.out.println("Command Name: " + commandName);
+    if (commandName == null || commandName.isEmpty()) {
+      throw new IllegalArgumentException("Invalid command");
+    } else if (commandName.equals("config")) {
+      commandName = String.join(" ", commandName, parts[4].toLowerCase());
+    }
 
     return RedisCommand.getHandler(commandName);
   }

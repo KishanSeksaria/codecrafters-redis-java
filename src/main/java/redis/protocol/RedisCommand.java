@@ -1,16 +1,13 @@
 package redis.protocol;
 
-import redis.commands.Command;
-import redis.commands.EchoCommand;
-import redis.commands.GetCommand;
-import redis.commands.PingCommand;
-import redis.commands.SetCommand;
+import redis.commands.*;
 
 public enum RedisCommand {
   PING("ping", new PingCommand()),
   ECHO("echo", new EchoCommand()),
   GET("get", new GetCommand()),
-  SET("set", new SetCommand());
+  SET("set", new SetCommand()),
+  CONFIG_GET("config get", new ConfigGetCommand());
 
   private final String name;
   private final Command handler;
