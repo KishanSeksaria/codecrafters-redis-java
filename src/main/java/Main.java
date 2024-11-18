@@ -55,7 +55,12 @@ class ClientHandler implements Runnable {
       byte[] buffer = new byte[1024];
       int bytesRead;
       while ((bytesRead = input.read(buffer)) != -1) {
-        output.write(buffer, 0, bytesRead);
+        String message = new String(buffer, 0, bytesRead);
+        if (message.contains("PING")) {
+          output.write("+PONG\r\n".getBytes());
+        } else {
+          output.write(":ERR - No such command\r\n".getBytes());
+        }
       }
     } catch (IOException e) {
       e.printStackTrace();
