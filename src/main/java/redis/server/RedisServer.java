@@ -6,13 +6,17 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import redis.protocol.RedisParser;
+
 public class RedisServer {
     private int port;
     private ExecutorService threadPool;
+    private final RedisParser parser;
 
     public RedisServer(int port, int threadPoolSize) {
         this.port = port;
         this.threadPool = Executors.newFixedThreadPool(threadPoolSize);
+        this.parser = new RedisParser();
     }
 
     public void start() {
@@ -26,7 +30,7 @@ public class RedisServer {
                 System.out.println("New client connected");
 
                 // Submit the client handling task to the thread pool
-                threadPool.submit(new ClientHandler(clientSocket));
+                threadPool.submit(new ClientHandler(clientSocket, parser));
             }
         } catch (IOException e) {
             e.printStackTrace();
