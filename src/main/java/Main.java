@@ -58,12 +58,11 @@ class ClientHandler implements Runnable {
         String message = new String(buffer, 0, bytesRead);
         if (message.contains("PING")) {
           output.write("+PONG\r\n".getBytes());
-        } else {
-          output.write(":ERR - No such command\r\n".getBytes());
-        }
-        if (message.contains("ECHO")) {
+        } else if (message.contains("ECHO")) {
           String echoMessage = message.substring(5, message.length() - 2);
           output.write(("+" + echoMessage + "\r\n").getBytes());
+        } else {
+          output.write(":ERR - No such command\r\n".getBytes());
         }
         output.flush();
       }
