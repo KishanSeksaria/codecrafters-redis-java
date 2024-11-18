@@ -1,55 +1,69 @@
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
   public static void main(String[] args) {
-    // You can use print statements as follows for debugging, they'll be visible
-    // when running tests.
     System.out.println("Logs from your program will appear here!");
 
-    // Uncomment this block to pass the first stage
     ServerSocket serverSocket = null;
-    Socket clientSocket = null;
     int port = 6379;
+    ExecutorService threadPool = Executors.newFixedThreadPool(10); // Create a thread pool with 10 threads
+
     try {
       serverSocket = new ServerSocket(port);
-      // Since the tester restarts your program quite often, setting SO_REUSEADDR
-      // ensures that we don't run into 'Address already in use' errors
-      serverSocket.setReuseAddress(true);
-      // Wait for connection from client.
-      clientSocket = serverSocket.accept();
-
-      InputStream inputStream = clientSocket.getInputStream();
-      OutputStream outputStream = clientSocket.getOutputStream();
-
-      byte[] buffer = new byte[1024];
+      System.out.println("Server is listening on port " + port);
 
       while (true) {
-        int read = inputStream.read(buffer);
-        if (read < 0) {
-          break;
-        }
-        String message = new String(buffer, 0, read);
-        if (message.contains("PING")) {
-          outputStream.write("+PONG\r\n".getBytes());
-        } else {
-          outputStream.write("+ERROR\r\n".getBytes());
+        Socket clientSocket = serverSocket.accept();
+        System.out.println("New client connected");
+
+        // Submit the client handling task to the thread pool
+        threadPool.submit(new ClientHandler(clientSocket));
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (serverSocket != null) {
+        try {
+          serverSocket.close();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
       }
+      threadPool.shutdown(); // Shutdown the thread pool
+    }
+  }
+}
 
+class ClientHandler implements Runnable {
+  private Socket clientSocket;
+
+  public ClientHandler(Socket socket) {
+    this.clientSocket = socket;
+  }
+
+  @Override
+  public void run() {
+    try (InputStream input = clientSocket.getInputStream();
+        OutputStream output = clientSocket.getOutputStream()) {
+      // Handle client request here
+      byte[] buffer = new byte[1024];
+      int bytesRead;
+      while ((bytesRead = input.read(buffer)) != -1) {
+        output.write(buffer, 0, bytesRead);
+      }
     } catch (IOException e) {
-      System.out.println("IOException: " + e.getMessage());
+      e.printStackTrace();
     } finally {
       try {
-        if (clientSocket != null) {
-          clientSocket.close();
-        }
+        clientSocket.close();
       } catch (IOException e) {
-        System.out.println("IOException: " + e.getMessage());
+        e.printStackTrace();
       }
     }
   }
